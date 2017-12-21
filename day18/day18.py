@@ -8,7 +8,6 @@ from threading import Thread
 prg =  list(map(lambda x: x.strip().split(), open("p2.txt").readlines()))
 
 
-
 def runProgram(prg, id, myQ, otherQ):
 	registers = {'p': id }
 	lastSound = False
