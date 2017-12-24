@@ -5,7 +5,6 @@ import math
 import re
 import sys
 import numpy as np
-
 from numba import jit
 
 debug=False
@@ -36,14 +35,12 @@ for l in map(lambda x: x.strip(), open(fileName).readlines()):
 
 ## Look up the correct rule and return it
 def recode(x):
-	global rules
-	y = "".join(x)
-	return  list(rules[y])
+	return  rules[y]
 
 ## return the subcube in range with w
 @jit
 def getRange(cube, x,y,w):
-	ret = []
+	ret = ""
 	x = int(x)
 	y = int(y)
 	w = int(w)
@@ -80,7 +77,7 @@ def getSubCubes(cube, s):
 #cube = list('#..#........#..#')
 @jit
 def combineSubCubes(cubes):
-	returnCube = []
+	returnCube = ""
 	numCubes =len(cubes)
 	cubesPerRow = int(math.sqrt(numCubes))
 	cubesize = int(math.sqrt(len(cubes[0])))
@@ -101,19 +98,14 @@ def printCube(cube):
 	print()
 
 
-cube = list('.#...####')
+cube = '.#...####'
+
 
 for i in range(0,18):
 	l = len(cube)
 	if l % 2 == 0:
-		cube = list(map(lambda x: recode(x), getSubCubes(cube,2)))
-		#print(cube)
-		cube = combineSubCubes(cube)
-		#printCube(cube)
+		cube = combineSubCubes(list(map(lambda x: rules[x], getSubCubes(cube,2))))
 	else:
-		cube = list(map(lambda x: recode(x), getSubCubes(cube,3)))
-		#print(cube)
-		cube = combineSubCubes(cube)
-		#printCube(cube)
+		cube = combineSubCubes(list(map(lambda x: rules[x], getSubCubes(cube,3))))
 	
 	print(i,len(list(filter(lambda x: x=='#', cube))))

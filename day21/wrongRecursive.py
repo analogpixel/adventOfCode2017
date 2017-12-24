@@ -6,8 +6,6 @@ import re
 import sys
 import numpy as np
 
-from numba import jit
-
 debug=False
 fileName = "input2.txt"
 
@@ -41,7 +39,6 @@ def recode(x):
 	return  list(rules[y])
 
 ## return the subcube in range with w
-@jit
 def getRange(cube, x,y,w):
 	ret = []
 	x = int(x)
@@ -64,56 +61,39 @@ def combineCubes(q1,q2,q3,q4):
 			r2 = r2 + q3[i*lineW:i*lineW+lineW] + q4[i*lineW:i*lineW+lineW]
 	return r1+r2
 
-@jit
-def getSubCubes(cube, s):
-	subCubes = []
-	l = len(cube)
-	sideLength = int(math.sqrt(l)) # how long is each side
-	cubesPerRow = int(sideLength / s) # how many cubes in each row
+## break cube into 4 sub cubes, and keep doing that
+## until we get to match condition
+def getCube(cube):
+	if debug: print("Entering getCube with:", cube)
+	if len(cube) == 4:
+		if debug: print("Return Recode 2x2")
+		return  recode(cube)
+	if len(cube) == 9:
+		if debug: print("Return Recode 3x3")
+		return recode(cube)
 
-	for y in range(0,cubesPerRow):
-		for x in range(0,cubesPerRow):
-			subCubes.append( getRange(cube, x*s,y*s,s) )
-	return subCubes
+	# how many items in each row and col
+	w = math.sqrt(len(cube))
 
+	if debug: print("getting q1-q4")
+	q1 = getCube(getRange(cube,0,0, w/2))
+	q2 = getCube(getRange(cube, w/2,0, w/2))
+	q3 = getCube(getRange(cube, 0, w/2,w/2))
+	q4 = getCube(getRange(cube, w/2,w/2,w/2))
 
-#cube = list('#..#........#..#')
-@jit
-def combineSubCubes(cubes):
-	returnCube = []
-	numCubes =len(cubes)
-	cubesPerRow = int(math.sqrt(numCubes))
-	cubesize = int(math.sqrt(len(cubes[0])))
+	allCubes = combineCubes(q1,q2,q3,q4)
 
-	#print( numCubes, cubesPerRow, cubesize)
-	for i in range(0, numCubes, cubesPerRow):
-		for  z in range(0, cubesize):
-			for k in range(0, cubesPerRow):
-				returnCube = returnCube + cubes[i+k][(z*cubesize):(z*cubesize+cubesize)]
+	if debug: print(len(q1), "q1:", q1)
+	if debug: print(len(q2), "q2:", q2)
+	if debug: print(len(q3), "q3:", q3)
+	if debug: print(len(q4), "q4:", q4)
+	if debug: print(len(allCubes), "all:", allCubes)
 
-	return returnCube
-
-def printCube(cube):
-	l = len(cube)
-	sideLength = int(math.sqrt(l))
-	for i in range(sideLength):
-		print( "".join(cube[i*sideLength: i*sideLength+sideLength]))
-	print()
+	return allCubes
 
 
-cube = list('.#...####')
+cube = list(".#...####")
+for i in range(0,5):
+	cube = getCube(cube)
 
-for i in range(0,18):
-	l = len(cube)
-	if l % 2 == 0:
-		cube = list(map(lambda x: recode(x), getSubCubes(cube,2)))
-		#print(cube)
-		cube = combineSubCubes(cube)
-		#printCube(cube)
-	else:
-		cube = list(map(lambda x: recode(x), getSubCubes(cube,3)))
-		#print(cube)
-		cube = combineSubCubes(cube)
-		#printCube(cube)
-	
-	print(i,len(list(filter(lambda x: x=='#', cube))))
+print(len(list(filter(lambda x: x=='#', cube))))
